@@ -1,0 +1,27 @@
+## 내가 쓴 답
+
+SELECT E3.ID
+FROM ECOLI_DATA E1
+JOIN ECOLI_DATA E2 ON E1.ID = E2.PARENT_ID
+JOIN ECOLI_DATA E3 ON E2.ID = E3.PARENT_ID
+WHERE E1.PARENT_ID IS NULL
+
+## 깔끔한 답
+
+WITH RECURSIVE GenerationCTE AS (
+    -- Anchor: 1세대 (부모가 없는 개체)
+    SELECT ID, PARENT_ID, 1 AS GEN
+    FROM ECOLI_DATA
+    WHERE PARENT_ID IS NULL
+    
+    UNION ALL
+    
+    -- Recursive: 자식 개체를 찾으며 세대(GEN)를 1씩 증가
+    SELECT e.ID, e.PARENT_ID, g.GEN + 1
+    FROM ECOLI_DATA e
+    INNER JOIN GenerationCTE g ON e.PARENT_ID = g.ID
+)
+SELECT ID
+FROM GenerationCTE
+WHERE GEN = 3
+ORDER BY ID;
